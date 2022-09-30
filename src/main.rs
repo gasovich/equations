@@ -2,61 +2,48 @@
 
 use std::io;
 use std::io::Write;
-use regex::Regex;
 
-// Вводим строку и проверяем, является ли она 
-// формально правильным числом с плавающей точкой
-fn input_f64() -> (f64, bool) {
-	let res: f64;
+fn get_f64(ask: &str) -> f64 {
+	let mut buffer = String::new();
+	let mut correct: bool = false;
+	let mut res: f64 = 0.0;
 	
-	// Выводится приглашение с указание типа запрашиваемого числа
-	print!("-f64-> ");
-	match io::stdout().flush() {
-		Ok(_) => {},
-		Err(e) => println!("Ошибка ввода - {}", e),
+	while !correct {
+		// Печатаем промпт
+		print!("{}", ask);
+		match io::stdout().flush() {
+			Ok(_) => {},
+			Err(e) => println!("Ошибка вывода - {}", e),
+		}
+		
+		// Читаем строку
+		match io::stdin().read_line(&mut buffer) {
+			Ok(_) => {},
+			Err(e) => println!("Ошибка ввода - {}", e),
+		};
+		
+		// Пытаемся преобразовать строку в число, получаем данные в формате Result
+		let k: Result<f64, _> = buffer.trim().parse();
+		match k {
+			Ok(_) => {
+				res = k.unwrap();
+				correct = true;
+			},
+			Err(_) => {
+				println!("Неправильный формат ввода");
+				buffer = "".to_string()
+			}
+		}
 	}
-	
-	let mut k_str: String = String::new();
-	
-	// Ввод строки
-	io::stdin().read_line(&mut k_str)
-		.ok()
-		.expect("Error read line!");
-	
-	// Обрезаем лишние символы в началае и в конце строки
-	let try_num = k_str.trim();
-	
-	// Регулярное выражение описывает формат числа с плавающей точкой
-	let re = Regex::new(r"^(\+|-)?\d*(\.)?\d*((e|E)(\+|-)?\d+)?$").unwrap();
-	
-	if re.is_match(&try_num) { // Если строка соответствует заданному формату
-		// то преобразуем ее в число и устанавливаем флаг корректного ввода 
-		res = try_num.parse::<f64>().unwrap();
-		return (res, true)
-	} else {
-		// иначе возвращаем ноль и флаг ошибки
-		return (0.0, false)
-	};
-}
-
-fn get_f64(ask: String) -> f64 {
-	// Выводим пояснение о вводимых данных и добиваемся корректного ввода
-	println!("{}", ask);
-	
-	let (mut num, mut correct) = input_f64();
-	while !correct { // Пока данные не соответствуют требуемому формату
-		println!("Неправильный формат ввода");
-		(num, correct) = input_f64() // запрашиваем повторный ввод
-	}
-	num // Возвращаем правильное вещественное число
+	res
 }
 
 fn main() {
     println!("Решение квадратного уравнения");
     
-    let a = get_f64("Коэффициент при x^2".to_string());
-    let b = get_f64("  Коэффициент при x".to_string());
-    let c = get_f64("     Свободный член".to_string());
+    let a = get_f64("Коэффициент при x^2 --> ");
+    let b = get_f64("  Коэффициент при x --> ");
+    let c = get_f64("     Свободный член --> ");
     	
 	let d: f64 = b * b - 4.0 * a * c;
 	
@@ -76,7 +63,7 @@ fn main() {
 	
 	let b_abs =b.abs();
 	let c_abs =c.abs();
-	println!("\n\nРешаем уравнение {a}*x^2 {b_sign} {b_abs}*x {c_sign} {c_abs}");
+	println!("\n\nРешаем уравнение {a}*x^2 {b_sign} {b_abs}*x {c_sign} {c_abs} = 0");
 	
 	if d > 0.0 {
 		let x1 = (-b + d.sqrt()) / 2.0 / a;
